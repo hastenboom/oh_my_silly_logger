@@ -150,6 +150,16 @@ func NewFileLoggerWithOption(options ...LoggerOption) *Logger {
 	return loggerPtr
 }
 
+func (l *Logger) Close() {
+	if l.file != nil {
+		l.file.Close()
+	}
+	if l.errFile != nil {
+		l.errFile.Close()
+	}
+
+}
+
 // <---------- options and constructor ends
 
 func (fl *Logger) Debug(format string, args ...any) {
@@ -227,6 +237,8 @@ func (fl *Logger) doWriteToFile(logMsg string, level Level) {
 		fullPathNameLog :=
 			filepath.Join(fl.filePath, fl.fileNamePrefix+timeSuffix+"-"+strconv.Itoa(newFileCount)+".log")
 
+		fl.file.Close() //close the old file
+
 		fl.file = openFile(fullPathNameLog)
 	}
 	fmt.Fprintln(fl.file, logMsg)
@@ -236,6 +248,8 @@ func (fl *Logger) doWriteToFile(logMsg string, level Level) {
 			newFileCount := getFileCount(fl.errFile.Name()) + 1
 			fullPathNameErr :=
 				filepath.Join(fl.filePath, fl.fileNamePrefix+timeSuffix+"-"+strconv.Itoa(newFileCount)+".err")
+
+			fl.errFile.Close() //close the old file
 
 			fl.errFile = openFile(fullPathNameErr)
 
